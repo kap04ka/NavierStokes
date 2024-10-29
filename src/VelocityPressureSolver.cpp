@@ -37,7 +37,7 @@ void VelocityPressureSolver::initializeBoundaryConditions(double u_max) {
         u[nx - 1][j] = 4 * u_max * j * (ny - 1 - j) / ((ny - 1) * (ny - 1));
     }
 
-    c = 10;
+    c = 1, density = 1, kinematic_viscosity = 1;
     logger->log("init boundary conditions success", LogLevel::INFO);
 }
 
@@ -57,13 +57,14 @@ void VelocityPressureSolver::updatePressure(double tau) {
 }
 
 void VelocityPressureSolver::updateBoundaryConditions() {
+    // Грани
     for (int i = 1; i < nx - 1; ++i) {
         pressure[i][0] = pressure[i][1];
         pressure[i][ny - 1] = pressure[i][ny - 2];
     }
     for (int j = 1; j < ny - 1; ++j) {
-        pressure[0][j] = pressure[1][j];
-        pressure[nx - 1][j] = pressure[nx - 2][j];
+        pressure[0][j] = 2 * pressure[1][j] - pressure[2][j];
+        pressure[nx - 1][j] = 2 * pressure[nx - 2][j] - pressure[nx - 3][j];
     }
 }
 
