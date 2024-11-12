@@ -1,6 +1,6 @@
-CMakeFiles/NavierStokes.dir/src/SolverFactory.cpp.obj: \
- D:/Navier-Stokes/src/SolverFactory.cpp \
- D:/Navier-Stokes/include/SolverFactory.hpp \
+CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj: \
+ D:/Navier-Stokes/src/VelocityPressureSolverOMP.cpp \
+ D:/Navier-Stokes/include/VelocityPressureSolverOMP.hpp \
  D:/Navier-Stokes/include/BasicSolver.hpp \
  C:/msys64/ucrt64/include/c++/14.1.0/memory \
  C:/msys64/ucrt64/include/c++/14.1.0/bits/memoryfwd.h \
@@ -140,8 +140,20 @@ CMakeFiles/NavierStokes.dir/src/SolverFactory.cpp.obj: \
  C:/msys64/ucrt64/include/c++/14.1.0/bits/charconv.h \
  C:/msys64/ucrt64/include/c++/14.1.0/bits/basic_string.tcc \
  D:/Navier-Stokes/include/ILogger.hpp \
- D:/Navier-Stokes/include/VelocityPressureSolver.hpp \
- D:/Navier-Stokes/include/VelocityPressureSolverOMP.hpp \
- D:/Navier-Stokes/include/VorticityStreamFunctionSolver.hpp \
- D:/Navier-Stokes/include/VorticityStreamFunctionSolverOMP.hpp \
- C:/msys64/ucrt64/include/c++/14.1.0/stdexcept
+ C:/msys64/ucrt64/include/c++/14.1.0/cmath \
+ C:/msys64/ucrt64/include/math.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/specfun.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/limits \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/gamma.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/special_function_util.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/bessel_function.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/beta_function.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/ell_integral.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/exp_integral.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/hypergeometric.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/legendre_function.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/modified_bessel_func.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/poly_hermite.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/poly_laguerre.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/riemann_zeta.tcc \
+ C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/14.1.0/include/omp.h

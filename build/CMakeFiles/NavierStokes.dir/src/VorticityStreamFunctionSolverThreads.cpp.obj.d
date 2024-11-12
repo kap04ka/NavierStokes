@@ -1,6 +1,6 @@
-CMakeFiles/NavierStokes.dir/src/SolverFactory.cpp.obj: \
- D:/Navier-Stokes/src/SolverFactory.cpp \
- D:/Navier-Stokes/include/SolverFactory.hpp \
+CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverThreads.cpp.obj: \
+ D:/Navier-Stokes/src/VorticityStreamFunctionSolverThreads.cpp \
+ D:/Navier-Stokes/include/VorticityStreamFunctionSolverThreads.hpp \
  D:/Navier-Stokes/include/BasicSolver.hpp \
  C:/msys64/ucrt64/include/c++/14.1.0/memory \
  C:/msys64/ucrt64/include/c++/14.1.0/bits/memoryfwd.h \
@@ -140,8 +140,56 @@ CMakeFiles/NavierStokes.dir/src/SolverFactory.cpp.obj: \
  C:/msys64/ucrt64/include/c++/14.1.0/bits/charconv.h \
  C:/msys64/ucrt64/include/c++/14.1.0/bits/basic_string.tcc \
  D:/Navier-Stokes/include/ILogger.hpp \
- D:/Navier-Stokes/include/VelocityPressureSolver.hpp \
- D:/Navier-Stokes/include/VelocityPressureSolverOMP.hpp \
- D:/Navier-Stokes/include/VorticityStreamFunctionSolver.hpp \
- D:/Navier-Stokes/include/VorticityStreamFunctionSolverOMP.hpp \
- C:/msys64/ucrt64/include/c++/14.1.0/stdexcept
+ C:/msys64/ucrt64/include/c++/14.1.0/algorithm \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/stl_algo.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/algorithmfwd.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/stl_heap.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/uniform_int_dist.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/pstl/glue_algorithm_defs.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/cmath \
+ C:/msys64/ucrt64/include/math.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/specfun.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/limits \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/gamma.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/special_function_util.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/bessel_function.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/beta_function.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/ell_integral.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/exp_integral.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/hypergeometric.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/legendre_function.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/modified_bessel_func.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/poly_hermite.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/poly_laguerre.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/tr1/riemann_zeta.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/iostream \
+ C:/msys64/ucrt64/include/c++/14.1.0/ostream \
+ C:/msys64/ucrt64/include/c++/14.1.0/ios \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/ios_base.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/locale_classes.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/locale_classes.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/system_error \
+ C:/msys64/ucrt64/include/c++/14.1.0/x86_64-w64-mingw32/bits/error_constants.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/stdexcept \
+ C:/msys64/ucrt64/include/c++/14.1.0/streambuf \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/streambuf.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/basic_ios.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/locale_facets.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/cwctype \
+ C:/msys64/ucrt64/include/wctype.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/x86_64-w64-mingw32/bits/ctype_base.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/streambuf_iterator.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/x86_64-w64-mingw32/bits/ctype_inline.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/locale_facets.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/basic_ios.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/ostream.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/istream \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/istream.tcc \
+ C:/msys64/ucrt64/include/c++/14.1.0/thread \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/std_thread.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/this_thread_sleep.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/chrono.h \
+ C:/msys64/ucrt64/include/c++/14.1.0/ratio \
+ C:/msys64/ucrt64/include/c++/14.1.0/cstdint \
+ C:/msys64/ucrt64/include/c++/14.1.0/ctime \
+ C:/msys64/ucrt64/include/c++/14.1.0/bits/parse_numbers.h

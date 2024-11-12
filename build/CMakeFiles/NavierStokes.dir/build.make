@@ -147,11 +147,26 @@ CMakeFiles/NavierStokes.dir/src/VelocityPressureSolver.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NavierStokes.dir/src/VelocityPressureSolver.cpp.s"
 	C:/msys64/ucrt64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:/Navier-Stokes/src/VelocityPressureSolver.cpp -o CMakeFiles/NavierStokes.dir/src/VelocityPressureSolver.cpp.s
 
+CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj: CMakeFiles/NavierStokes.dir/flags.make
+CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj: CMakeFiles/NavierStokes.dir/includes_CXX.rsp
+CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj: D:/Navier-Stokes/src/VelocityPressureSolverOMP.cpp
+CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj: CMakeFiles/NavierStokes.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:/Navier-Stokes/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj"
+	C:/msys64/ucrt64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj -MF CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj.d -o CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj -c D:/Navier-Stokes/src/VelocityPressureSolverOMP.cpp
+
+CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.i"
+	C:/msys64/ucrt64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:/Navier-Stokes/src/VelocityPressureSolverOMP.cpp > CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.i
+
+CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.s"
+	C:/msys64/ucrt64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:/Navier-Stokes/src/VelocityPressureSolverOMP.cpp -o CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.s
+
 CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj: CMakeFiles/NavierStokes.dir/flags.make
 CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj: CMakeFiles/NavierStokes.dir/includes_CXX.rsp
 CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj: D:/Navier-Stokes/src/VorticityStreamFunctionSolver.cpp
 CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj: CMakeFiles/NavierStokes.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:/Navier-Stokes/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:/Navier-Stokes/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj"
 	C:/msys64/ucrt64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj -MF CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj.d -o CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj -c D:/Navier-Stokes/src/VorticityStreamFunctionSolver.cpp
 
 CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.i: cmake_force
@@ -162,6 +177,21 @@ CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.s"
 	C:/msys64/ucrt64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:/Navier-Stokes/src/VorticityStreamFunctionSolver.cpp -o CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.s
 
+CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.obj: CMakeFiles/NavierStokes.dir/flags.make
+CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.obj: CMakeFiles/NavierStokes.dir/includes_CXX.rsp
+CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.obj: D:/Navier-Stokes/src/VorticityStreamFunctionSolverOMP.cpp
+CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.obj: CMakeFiles/NavierStokes.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=D:/Navier-Stokes/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.obj"
+	C:/msys64/ucrt64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.obj -MF CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.obj.d -o CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.obj -c D:/Navier-Stokes/src/VorticityStreamFunctionSolverOMP.cpp
+
+CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.i"
+	C:/msys64/ucrt64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:/Navier-Stokes/src/VorticityStreamFunctionSolverOMP.cpp > CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.i
+
+CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.s"
+	C:/msys64/ucrt64/bin/c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:/Navier-Stokes/src/VorticityStreamFunctionSolverOMP.cpp -o CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.s
+
 # Object files for target NavierStokes
 NavierStokes_OBJECTS = \
 "CMakeFiles/NavierStokes.dir/src/main.cpp.obj" \
@@ -169,7 +199,9 @@ NavierStokes_OBJECTS = \
 "CMakeFiles/NavierStokes.dir/src/ConsoleLogger.cpp.obj" \
 "CMakeFiles/NavierStokes.dir/src/SolverFactory.cpp.obj" \
 "CMakeFiles/NavierStokes.dir/src/VelocityPressureSolver.cpp.obj" \
-"CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj"
+"CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj" \
+"CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj" \
+"CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.obj"
 
 # External object files for target NavierStokes
 NavierStokes_EXTERNAL_OBJECTS =
@@ -179,11 +211,15 @@ NavierStokes.exe: CMakeFiles/NavierStokes.dir/src/BasicSolver.cpp.obj
 NavierStokes.exe: CMakeFiles/NavierStokes.dir/src/ConsoleLogger.cpp.obj
 NavierStokes.exe: CMakeFiles/NavierStokes.dir/src/SolverFactory.cpp.obj
 NavierStokes.exe: CMakeFiles/NavierStokes.dir/src/VelocityPressureSolver.cpp.obj
+NavierStokes.exe: CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj
 NavierStokes.exe: CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj
+NavierStokes.exe: CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.obj
 NavierStokes.exe: CMakeFiles/NavierStokes.dir/build.make
+NavierStokes.exe: C:/msys64/ucrt64/lib/libgomp.dll.a
+NavierStokes.exe: C:/msys64/ucrt64/lib/libmingwthrd.a
 NavierStokes.exe: CMakeFiles/NavierStokes.dir/linkLibs.rsp
 NavierStokes.exe: CMakeFiles/NavierStokes.dir/objects1.rsp
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=D:/Navier-Stokes/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable NavierStokes.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=D:/Navier-Stokes/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable NavierStokes.exe"
 	"C:/Program Files/CMake/bin/cmake.exe" -E rm -f CMakeFiles/NavierStokes.dir/objects.a
 	C:/msys64/ucrt64/bin/ar.exe qc CMakeFiles/NavierStokes.dir/objects.a @CMakeFiles/NavierStokes.dir/objects1.rsp
 	C:/msys64/ucrt64/bin/c++.exe -Wl,--whole-archive CMakeFiles/NavierStokes.dir/objects.a -Wl,--no-whole-archive -o NavierStokes.exe -Wl,--out-implib,libNavierStokes.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles/NavierStokes.dir/linkLibs.rsp

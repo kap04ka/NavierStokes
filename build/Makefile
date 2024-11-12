@@ -225,6 +225,30 @@ src/VelocityPressureSolver.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/NavierStokes.dir/build.make CMakeFiles/NavierStokes.dir/src/VelocityPressureSolver.cpp.s
 .PHONY : src/VelocityPressureSolver.cpp.s
 
+src/VelocityPressureSolverOMP.obj: src/VelocityPressureSolverOMP.cpp.obj
+.PHONY : src/VelocityPressureSolverOMP.obj
+
+# target to build an object file
+src/VelocityPressureSolverOMP.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/NavierStokes.dir/build.make CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj
+.PHONY : src/VelocityPressureSolverOMP.cpp.obj
+
+src/VelocityPressureSolverOMP.i: src/VelocityPressureSolverOMP.cpp.i
+.PHONY : src/VelocityPressureSolverOMP.i
+
+# target to preprocess a source file
+src/VelocityPressureSolverOMP.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/NavierStokes.dir/build.make CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.i
+.PHONY : src/VelocityPressureSolverOMP.cpp.i
+
+src/VelocityPressureSolverOMP.s: src/VelocityPressureSolverOMP.cpp.s
+.PHONY : src/VelocityPressureSolverOMP.s
+
+# target to generate assembly for a file
+src/VelocityPressureSolverOMP.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/NavierStokes.dir/build.make CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.s
+.PHONY : src/VelocityPressureSolverOMP.cpp.s
+
 src/VorticityStreamFunctionSolver.obj: src/VorticityStreamFunctionSolver.cpp.obj
 .PHONY : src/VorticityStreamFunctionSolver.obj
 
@@ -248,6 +272,30 @@ src/VorticityStreamFunctionSolver.s: src/VorticityStreamFunctionSolver.cpp.s
 src/VorticityStreamFunctionSolver.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/NavierStokes.dir/build.make CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.s
 .PHONY : src/VorticityStreamFunctionSolver.cpp.s
+
+src/VorticityStreamFunctionSolverOMP.obj: src/VorticityStreamFunctionSolverOMP.cpp.obj
+.PHONY : src/VorticityStreamFunctionSolverOMP.obj
+
+# target to build an object file
+src/VorticityStreamFunctionSolverOMP.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/NavierStokes.dir/build.make CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.obj
+.PHONY : src/VorticityStreamFunctionSolverOMP.cpp.obj
+
+src/VorticityStreamFunctionSolverOMP.i: src/VorticityStreamFunctionSolverOMP.cpp.i
+.PHONY : src/VorticityStreamFunctionSolverOMP.i
+
+# target to preprocess a source file
+src/VorticityStreamFunctionSolverOMP.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/NavierStokes.dir/build.make CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.i
+.PHONY : src/VorticityStreamFunctionSolverOMP.cpp.i
+
+src/VorticityStreamFunctionSolverOMP.s: src/VorticityStreamFunctionSolverOMP.cpp.s
+.PHONY : src/VorticityStreamFunctionSolverOMP.s
+
+# target to generate assembly for a file
+src/VorticityStreamFunctionSolverOMP.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/NavierStokes.dir/build.make CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.s
+.PHONY : src/VorticityStreamFunctionSolverOMP.cpp.s
 
 src/main.obj: src/main.cpp.obj
 .PHONY : src/main.obj
@@ -294,9 +342,15 @@ help:
 	@echo "... src/VelocityPressureSolver.obj"
 	@echo "... src/VelocityPressureSolver.i"
 	@echo "... src/VelocityPressureSolver.s"
+	@echo "... src/VelocityPressureSolverOMP.obj"
+	@echo "... src/VelocityPressureSolverOMP.i"
+	@echo "... src/VelocityPressureSolverOMP.s"
 	@echo "... src/VorticityStreamFunctionSolver.obj"
 	@echo "... src/VorticityStreamFunctionSolver.i"
 	@echo "... src/VorticityStreamFunctionSolver.s"
+	@echo "... src/VorticityStreamFunctionSolverOMP.obj"
+	@echo "... src/VorticityStreamFunctionSolverOMP.i"
+	@echo "... src/VorticityStreamFunctionSolverOMP.s"
 	@echo "... src/main.obj"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

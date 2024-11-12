@@ -12,7 +12,9 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "D:/Navier-Stokes/src/ConsoleLogger.cpp" "CMakeFiles/NavierStokes.dir/src/ConsoleLogger.cpp.obj" "gcc" "CMakeFiles/NavierStokes.dir/src/ConsoleLogger.cpp.obj.d"
   "D:/Navier-Stokes/src/SolverFactory.cpp" "CMakeFiles/NavierStokes.dir/src/SolverFactory.cpp.obj" "gcc" "CMakeFiles/NavierStokes.dir/src/SolverFactory.cpp.obj.d"
   "D:/Navier-Stokes/src/VelocityPressureSolver.cpp" "CMakeFiles/NavierStokes.dir/src/VelocityPressureSolver.cpp.obj" "gcc" "CMakeFiles/NavierStokes.dir/src/VelocityPressureSolver.cpp.obj.d"
+  "D:/Navier-Stokes/src/VelocityPressureSolverOMP.cpp" "CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj" "gcc" "CMakeFiles/NavierStokes.dir/src/VelocityPressureSolverOMP.cpp.obj.d"
   "D:/Navier-Stokes/src/VorticityStreamFunctionSolver.cpp" "CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj" "gcc" "CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolver.cpp.obj.d"
+  "D:/Navier-Stokes/src/VorticityStreamFunctionSolverOMP.cpp" "CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.obj" "gcc" "CMakeFiles/NavierStokes.dir/src/VorticityStreamFunctionSolverOMP.cpp.obj.d"
   "D:/Navier-Stokes/src/main.cpp" "CMakeFiles/NavierStokes.dir/src/main.cpp.obj" "gcc" "CMakeFiles/NavierStokes.dir/src/main.cpp.obj.d"
   )
 
