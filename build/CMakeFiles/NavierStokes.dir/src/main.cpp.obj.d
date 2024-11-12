@@ -168,13 +168,4 @@ CMakeFiles/NavierStokes.dir/src/main.cpp.obj: \
  D:/Navier-Stokes/include/VelocityPressureSolver.hpp \
  D:/Navier-Stokes/include/VelocityPressureSolverOMP.hpp \
  D:/Navier-Stokes/include/VorticityStreamFunctionSolver.hpp \
- D:/Navier-Stokes/include/VorticityStreamFunctionSolverOMP.hpp \
- D:/Navier-Stokes/di/include/boost/di.hpp \
- C:/msys64/ucrt64/include/c++/14.1.0/set \
- C:/msys64/ucrt64/include/c++/14.1.0/bits/stl_tree.h \
- C:/msys64/ucrt64/include/c++/14.1.0/bits/node_handle.h \
- C:/msys64/ucrt64/include/c++/14.1.0/bits/stl_set.h \
- C:/msys64/ucrt64/include/c++/14.1.0/bits/stl_multiset.h \
- C:/msys64/ucrt64/include/c++/14.1.0/bits/erase_if.h \
- C:/msys64/ucrt64/include/c++/14.1.0/iterator \
- C:/msys64/ucrt64/include/c++/14.1.0/bits/stream_iterator.h
+ D:/Navier-Stokes/include/VorticityStreamFunctionSolverOMP.hpp
