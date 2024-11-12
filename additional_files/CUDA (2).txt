@@ -1,0 +1,799 @@
+#include "cuda_runtime.h" 
+
+#include "device_launch_parameters.h" 
+
+#include <cuda_runtime_api.h> 
+
+#include <iostream> 
+
+#include <cmath> 
+
+#include <iomanip> 
+
+#include <algorithm> 
+
+#include <fstream> 
+
+#include <vector> 
+
+ 
+
+using namespace std; 
+
+ 
+
+#ifndef __CUDACC__   
+
+#define __CUDACC__     
+
+#endif 
+
+#include <device_functions.h> 
+
+ 
+
+#define block_size 16 
+
+ 
+
+__global__ void WRecalc(float * W, float* WNew, float* Psi, float* Ux, float * Uy, int* obstruction, int nx, int ny, float tau, float nu, float h) { 
+
+    int i = blockIdx.x * blockDim.x + threadIdx.x; 
+
+    int j = blockIdx.y * blockDim.y + threadIdx.y; 
+
+ 
+
+    __syncthreads(); 
+
+ 
+
+    // Вихрьнаграницах 
+
+ 
+
+if (i>= 0 &&i<nx) { 
+
+// СверхуРО 
+
+        W[i + (ny - 1) * nx] = WNew[i + (ny - 1) * nx] = -(Psi[i + (ny - 1) * nx] - Psi[i + (ny - 2) * nx]) / (h * h); 
+
+ 
+
+    } 
+
+ 
+
+    __syncthreads(); 
+
+ 
+
+    if (i >= 0 && i < nx) { 
+
+        // СнизуРО 
+
+        W[i + 0 * nx] = WNew[i + 0 * nx] = -(Psi[i + 1 * nx] - Psi[i + 0 * nx]) / (h * h); 
+
+    } 
+
+ 
+
+    __syncthreads(); 
+
+ 
+
+    if ((i < nx - 1) && (i >= 1) && (j < ny - 1) && (j >= 1)) { 
+
+ 
+
+        // Снизупрепятствия 
+
+        if (obstruction[i + j * nx] == 1 && obstruction[i + (j - 1) * nx] == 0) { 
+
+            W[i + j * nx] = WNew[i + j * nx] = -(Psi[i + j * nx] - Psi[i + (j - 1) * nx]) / (h * h); 
+
+        } 
+
+ 
+
+        // Сверхупрепятствия 
+
+        if (obstruction[i + j * nx] == 1 && obstruction[i + (j + 1) * nx] == 0) { 
+
+            W[i + j * nx] = WNew[i + j * nx] = -(Psi[i + (j + 1) * nx] - Psi[i + j * nx]) / (h * h); 
+
+        } 
+
+ 
+
+        // Слевапрепятствия 
+
+        if (obstruction[i + j * nx] == 1 && obstruction[i - 1 + j * nx] == 0) { 
+
+            W[i + j * nx] = WNew[i + j * nx] = -(Psi[i + j * nx] - Psi[i - 1 + j * nx]) / (h * h); 
+
+        } 
+
+ 
+
+        // Справапрепятствия 
+
+        if (obstruction[i + j * nx] == 1 && obstruction[i + 1 + j * nx] == 0) { 
+
+            W[i + j * nx] = WNew[i + j * nx] = -(Psi[i + 1 + j * nx] - Psi[i + j * nx]) / (h * h); 
+
+        } 
+
+    } 
+
+ 
+
+    __syncthreads(); 
+
+ 
+
+    // УравненеиеГельмгольца 
+
+ 
+
+    if ((i < nx - 1) && (i >= 1) && (j < ny - 1) && (j >= 1)) { 
+
+        if (obstruction[i + j * nx] == 0) { 
+
+            WNew[i + j * nx] = W[i + j * nx] + tau * (-((Ux[i + j * nx] + fabs(Ux[i + j * nx])) / 2.0f) * (W[i + j * nx] - W[i - 1 + j * nx]) / h 
+
+                - ((Ux[i + j * nx] - fabs(Ux[i + j * nx])) / 2.0f) * (W[i + 1 + j * nx] - W[i + j * nx]) / h 
+
+                - ((Uy[i + j * nx] + fabs(Uy[i + j * nx])) / 2.0f) * (W[i + j * nx] - W[i + (j - 1) * nx]) / h 
+
+                - ((Uy[i + j * nx] - fabs(Uy[i + j * nx])) / 2.0f) * (W[i + (j + 1) * nx] - W[i + j * nx]) / h 
+
+                + nu * ((W[i + 1 + j * nx] + W[i - 1 + j * nx] + W[i + (j + 1) * nx] + W[i + (j - 1) * nx] - 4.0f * W[i + j * nx]) / (h * h))); 
+
+        } 
+
+    } 
+
+ 
+
+    __syncthreads(); 
+
+ 
+
+    // Переприсваивание 
+
+    if ((i < nx - 1) && (i >= 1) && (j < ny - 1) && (j >= 1)) { 
+
+        W[i + j * nx] = WNew[i + j * nx]; 
+
+    } 
+
+ 
+
+    __syncthreads(); 
+
+} 
+
+ 
+
+__global__ void PsiRecalc(float * Psi, float* PsiNew, float * W, int * obstruction, bool* accuracyAchieved, int nx, int ny, float h, float epsilon) { 
+
+    int i = blockIdx.x * blockDim.x + threadIdx.x + 1; 
+
+    int j = blockIdx.y * blockDim.y + threadIdx.y + 1; 
+
+ 
+
+    __syncthreads(); 
+
+ 
+
+    if ((i < nx - 1) && (i >= 1) && (j < ny - 1) && (j >= 1)) { 
+
+        accuracyAchieved[i + j * nx] = false; 
+
+        if (obstruction[i + j * nx] == 0) { 
+
+            PsiNew[i + j * nx] = (h * h * W[i + j * nx] + Psi[i + 1 + j * nx] + Psi[i - 1 + j * nx] + Psi[i + (j + 1) * nx] + Psi[i + (j - 1) * nx]) / 4.0f; 
+
+            if (fabs(PsiNew[i + j * nx] - Psi[i + j * nx]) < epsilon) { 
+
+                accuracyAchieved[i + j * nx] = true; 
+
+            } 
+
+        } 
+
+    } 
+
+ 
+
+    __syncthreads(); 
+
+ 
+
+    // Переприсваиваем 
+
+    if ((i < nx - 1) && (i >= 1) && (j < ny - 1) && (j >= 1)) { 
+
+        if (obstruction[i + j * nx] == 0) { 
+
+            Psi[i + j * nx] = PsiNew[i + j * nx]; 
+
+        } 
+
+    } 
+
+ 
+
+    __syncthreads(); 
+
+} 
+
+ 
+
+__global__ void URecalc(float * Psi, float * Ux, float * Uy, int * obstruction,  int nx, int ny, float h) { 
+
+    int i = blockIdx.x * blockDim.x + threadIdx.x + 1; 
+
+    int j = blockIdx.y * blockDim.y + threadIdx.y + 1; 
+
+ 
+
+    __syncthreads(); 
+
+ 
+
+    if ((i < nx - 1) && (i >= 1) && (j < ny - 1) && (j >= 1)) { 
+
+        if (obstruction[i + j * nx] == 0) { 
+
+            Ux[i + j * nx] = (Psi[i + 1 + (j + 1) * nx] + Psi[i - 1 + (j + 1) * nx] - Psi[i + 1 + (j - 1) * nx] - Psi[i - 1 + (j - 1) * nx]) / (4.0f * h); 
+
+            Uy[i + j * nx] = -(Psi[i + 1 + (j + 1) * nx] - Psi[i - 1 + (j + 1) * nx] + Psi[i + 1 + (j - 1) * nx] - Psi[i - 1 + (j - 1) * nx]) / (4.0f * h); 
+
+ 
+
+        } 
+
+    } 
+
+    __syncthreads(); 
+
+} 
+
+ 
+
+int main() 
+
+{ 
+
+    srand(time(NULL)); 
+
+setlocale(LC_ALL, "RUS"); 
+
+ 
+
+    // Определение необходимых переменных 
+
+ 
+
+    // Определение размера расчетной области 
+
+    float 
+
+        Lx = 15.0f, 
+
+        Ly = 10.0f; 
+
+ 
+
+    // Определение побочных переменных 
+
+    float 
+
+UxMax = 2.0f, 
+
+        h = 0.5f, 
+
+        tau = 0.001f, 
+
+        t = 0.0f, 
+
+        tmax = 1.5f, 
+
+        nu = 0.009f, 
+
+        epsilon = 0.05f, 
+
+        eps = -1.0f, 
+
+        time = 0.0f, 
+
+Q; 
+
+ 
+
+    bool flag; 
+
+ 
+
+    // Определение кол-ва точек по x и y, границ препятсвия в точках 
+
+int 
+
+        nx = (int)(Lx / h) + 1, 
+
+ny = (int)(Ly / h) + 1; 
+
+ 
+
+    // Размеры массивов 
+
+ 
+
+int sizeFloatArrays = nx * ny * sizeof(float); 
+
+    int sizeIntArrays = nx * ny * sizeof(int); 
+
+ 
+
+    // Массивынахосте 
+
+ 
+
+    float 
+
+        * Ux = new float[nx * ny], 
+
+        * Uy = new float[nx * ny], 
+
+        * Psi = new float[nx * ny], 
+
+        * PsiNew = new float[nx * ny], 
+
+        * W = new float[nx * ny], 
+
+        * WNew = new float[nx * ny]; 
+
+ 
+
+    int 
+
+        * obstruction = new int[nx * ny]; 
+
+ 
+
+    bool 
+
+        * accuracyAchieved = new bool[nx * ny]; 
+
+ 
+
+// Массивы на девайсе 
+
+ 
+
+    float 
+
+        * UxDev = NULL, 
+
+* UyDev = NULL, 
+
+        * PsiDev = NULL, 
+
+        * PsiNewDev = NULL, 
+
+        * WDev = NULL, 
+
+        * WNewDev = NULL; 
+
+ 
+
+    int 
+
+        * obstructionDev = NULL; 
+
+ 
+
+    bool 
+
+        * accuracyAchievedDev = NULL; 
+
+ 
+
+    // Обнулениемассивов 
+
+ 
+
+    memset(Ux, 0.0f, sizeFloatArrays); 
+
+    memset(Uy, 0.0f, sizeFloatArrays); 
+
+    memset(Psi, 0.0f, sizeFloatArrays); 
+
+    memset(PsiNew, 0.0f, sizeFloatArrays); 
+
+    memset(W, 0.0f, sizeFloatArrays); 
+
+    memset(WNew, 0.0f, sizeFloatArrays); 
+
+    memset(obstruction, 0, sizeIntArrays); 
+
+    memset(accuracyAchieved, false, nx * ny * sizeof(bool)); 
+
+ 
+
+// Начальные значения  
+
+ 
+
+ 
+
+    // Определение граничных значений для скорости (Параболический профиль слева и справа) 
+
+ 
+
+for (int j = 1; j < ny - 1; j++) { 
+
+        Ux[0 + j * nx] = 4 * UxMax * j * (ny - 1 - j) / ((ny - 1) * (ny - 1)); 
+
+        Ux[(nx - 1) + j * nx] = 4 * UxMax * j * (ny - 1 - j) / ((ny - 1) * (ny - 1)); 
+
+} 
+
+ 
+
+    // Определение граничных условий для функции тока 
+
+ 
+
+// Снизу 
+
+    for (int i = 0; i < nx; i++) { 
+
+Psi[i + 0 * nx] = 0.0f; 
+
+    } 
+
+ 
+
+    // Слева и справа 
+
+for (int j = 1; j < ny - 1; j++) { 
+
+        Psi[0 + j * nx] = Psi[0 + (j - 1) * nx] + Ux[0 + j * nx] * h; 
+
+        Psi[nx - 1 + j * nx] = Psi[nx - 1 + (j - 1) * nx] + Ux[nx - 1 + j * nx] * h; 
+
+    } 
+
+ 
+
+    //Сверху 
+
+    Psi[0 + (ny - 1) * nx] = Psi[0 + (ny - 2) * nx]; 
+
+    for (int i = 1; i < nx; i++) { 
+
+        Psi[i + (ny - 1) * nx] = Psi[i - 1 + (ny - 1) * nx]; 
+
+    } 
+
+ 
+
+    Q = Psi[0 + (ny - 1) * nx] - Psi[0 + 0 * nx]; 
+
+ 
+
+// Заполнение массива препятствия 
+
+ 
+
+    // Несколько препятствий будем добавлять в вектор  
+
+vector<float> obstructionCoords; 
+
+    vector<vector<float>> allObstructiont; 
+
+ 
+
+//// (x1, x2, y1, y2) 
+
+    //// Notice: Пока что только прямоугольные 
+
+obstructionCoords = { 2.0, 3.5, 2.0, 8.0 }; 
+
+allObstructiont.push_back(obstructionCoords); 
+
+ 
+
+obstructionCoords = { 5.0, 7.0, 0.0, 4.0 }; 
+
+allObstructiont.push_back(obstructionCoords); 
+
+ 
+
+obstructionCoords = { 5.0, 7.0, 6.0, 10.0 }; 
+
+allObstructiont.push_back(obstructionCoords); 
+
+ 
+
+obstructionCoords = { 9.0, 13.0, 4.0, 6.0 }; 
+
+allObstructiont.push_back(obstructionCoords); 
+
+ 
+
+    for (int i = 0; i < nx; i++) { 
+
+        obstruction[i + 0 * nx] = 1; 
+
+        obstruction[i + (ny - 1) * nx] = 1; 
+
+    } 
+
+ 
+
+    obstructionFormation(obstruction, allObstructiont, h, Psi, nx, ny, Q); 
+
+ 
+
+    // Выделениепамятимассивамнадевайсе 
+
+ 
+
+    cudaMalloc((void**)&UxDev, sizeFloatArrays); 
+
+    cudaMalloc((void**)&UyDev, sizeFloatArrays); 
+
+    cudaMalloc((void**)&PsiDev, sizeFloatArrays); 
+
+    cudaMalloc((void**)&PsiNewDev, sizeFloatArrays); 
+
+    cudaMalloc((void**)&WDev, sizeFloatArrays); 
+
+    cudaMalloc((void**)&WNewDev, sizeFloatArrays); 
+
+    cudaMalloc((void**)&obstructionDev, sizeIntArrays); 
+
+    cudaMalloc((void**)&accuracyAchievedDev, nx * ny * sizeof(bool)); 
+
+ 
+
+// Передаем значения с хоста на девайс 
+
+ 
+
+cudaMemcpy(UxDev, Ux, sizeFloatArrays, cudaMemcpyHostToDevice); 
+
+    cudaMemcpy(UyDev, Uy, sizeFloatArrays, cudaMemcpyHostToDevice); 
+
+    cudaMemcpy(PsiDev, Psi, sizeFloatArrays, cudaMemcpyHostToDevice); 
+
+    cudaMemcpy(PsiNewDev, PsiNew, sizeFloatArrays, cudaMemcpyHostToDevice); 
+
+    cudaMemcpy(WDev, W, sizeFloatArrays, cudaMemcpyHostToDevice); 
+
+    cudaMemcpy(WNewDev, WNew, sizeFloatArrays, cudaMemcpyHostToDevice); 
+
+    cudaMemcpy(obstructionDev, obstruction, sizeIntArrays, cudaMemcpyHostToDevice); 
+
+    cudaMemcpy(accuracyAchievedDev, accuracyAchieved, nx * ny * sizeof(bool), cudaMemcpyHostToDevice); 
+
+ 
+
+// Объявление и создание событий времени 
+
+ 
+
+    cudaEvent_t tn, tk; 
+
+    cudaEventCreate(&tn); 
+
+    cudaEventCreate(&tk); 
+
+ 
+
+    // Начало вычислительного цикла 
+
+cudaEventRecord(tn, 0); 
+
+ 
+
+    do { 
+
+        // Пересчет вихря 
+
+ 
+
+        WRecalc <<< dim3(nx / block_size + 1, ny / block_size + 1), 
+
+            dim3(block_size, block_size) >>> (WDev, WNewDev, PsiDev, UxDev, UyDev, obstructionDev, nx, ny, tau, nu, h); 
+
+        cudaThreadSynchronize(); 
+
+ 
+
+        // Пересчетфункциитока 
+
+ 
+
+do { 
+
+flag = true; 
+
+eps = -1.0f; 
+
+            PsiRecalc <<< dim3(nx / block_size + 1, ny / block_size + 1), 
+
+                dim3(block_size, block_size) >>> (PsiDev, PsiNewDev, WDev, obstructionDev, accuracyAchievedDev, nx, ny, h, epsilon); 
+
+            cudaThreadSynchronize(); 
+
+            cudaMemcpy(accuracyAchieved, accuracyAchievedDev, nx * ny * sizeof(bool), cudaMemcpyDeviceToHost); 
+
+ 
+
+            for (int i = 1; i < nx - 1; i++) { 
+
+                for (int j = 1; j < ny - 1; j++) { 
+
+                    if (obstruction[i + j * nx] == 0) { 
+
+                        if (accuracyAchieved[i + j * nx] == false) { 
+
+                            flag = false; 
+
+                            i = nx; 
+
+                            j = ny; 
+
+                        } 
+
+                    } 
+
+                } 
+
+            } 
+
+ 
+
+        } while (!flag); 
+
+        cudaThreadSynchronize(); 
+
+ 
+
+        // Пересчетскоростей 
+
+        URecalc <<< dim3(nx / block_size + 1, ny / block_size + 1), 
+
+            dim3(block_size, block_size) >>> (PsiDev, UxDev, UyDev, obstructionDev, nx, ny, h); 
+
+        cudaThreadSynchronize(); 
+
+ 
+
+        t += tau; 
+
+    } while (t <= tmax); 
+
+ 
+
+// Копирование данных с девайса на хост 
+
+cudaMemcpy(Ux, UxDev, sizeFloatArrays, cudaMemcpyDeviceToHost); 
+
+    cudaMemcpy(Uy, UyDev, sizeFloatArrays, cudaMemcpyDeviceToHost); 
+
+ 
+
+    cudaEventRecord(tk, 0); 
+
+ 
+
+    cudaThreadSynchronize(); 
+
+ 
+
+    cudaEventElapsedTime(&time, tn, tk); 
+
+ 
+
+    cout << "Время: " << time / 1000 << endl; 
+
+ 
+
+    std::ofstream outUx, outUy; 
+
+    outUx.open("Ux_res.txt"); 
+
+    outUy.open("Uy_res.txt"); 
+
+ 
+
+// Вывод массива скорости Ux 
+
+    for (int j = ny - 1; j >= 0; j--) { 
+
+for (int i = 0; i < nx; i++) { 
+
+            outUx << std::fixed << setprecision(6) << Ux[i + j * nx] << "\t\t"; 
+
+        } 
+
+        outUx << endl; 
+
+    } 
+
+    outUx.close(); 
+
+ 
+
+    // Выводмассиваскорости Uy 
+
+    for (int j = ny - 1; j >= 0; j--) { 
+
+        for (int i = 0; i < nx; i++) { 
+
+            outUy << std::fixed << setprecision(6) << Uy[i + j * nx] << "\t\t"; 
+
+        } 
+
+        outUy << endl; 
+
+    } 
+
+    outUy.close(); 
+
+ 
+
+    // Удаляемсобытия, освобождеипамять 
+
+ 
+
+    cudaEventDestroy(tn); 
+
+    cudaEventDestroy(tk); 
+
+ 
+
+    cudaFree(UxDev); 
+
+    cudaFree(UyDev); 
+
+    cudaFree(PsiDev); 
+
+    cudaFree(PsiNewDev); 
+
+    cudaFree(WDev); 
+
+    cudaFree(WNewDev); 
+
+    cudaFree(obstructionDev); 
+
+ 
+
+    free(Ux); 
+
+    free(Uy); 
+
+    free(Psi); 
+
+    free(PsiNew); 
+
+    free(W); 
+
+    free(WNew); 
+
+    free(obstruction); 
+
+ 
+
+    system("pause"); 
+
+    return 0; 
+
+} 

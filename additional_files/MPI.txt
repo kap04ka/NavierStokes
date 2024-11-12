@@ -1,0 +1,1069 @@
+#include<iostream> 
+#include <iomanip> 
+#include <algorithm> 
+#include <fstream> 
+#include <vector> 
+#include <mpi.h> 
+
+using namespace std; 
+
+int main(int argc, char** argv) 
+{ 
+    int size, rank; 
+
+    if (MPI_Init(&argc, &argv) != MPI_SUCCESS) { return 1; } 
+    if (MPI_Comm_size(MPI_COMM_WORLD, &size) != MPI_SUCCESS) { MPI_Finalize(); return 2; } 
+    if (MPI_Comm_rank(MPI_COMM_WORLD, &rank) != MPI_SUCCESS) { MPI_Finalize(); return 3; } 
+
+    srand(time(NULL)); 
+
+    MPI_Status status; 
+    int msgtag = 1; 
+    double sTime, eTime; 
+
+setlocale(LC_ALL, "RUS"); 
+
+    // Определение необходимых переменных 
+
+    // Определение размера расчетной области 
+    double 
+        Lx = 15.0, 
+        Ly = 10.0; 
+
+    // Определение побочных переменных 
+    double 
+        UxMax = 2.0, 
+	h = 0.5, 
+        tau = 0.001, 
+        t = 0.0, 
+        tmax = 1.5, 
+        nu = 0.009, 
+        epsilon = 0.05, 
+        eps = -1.0, 
+        globaleps = -1.0, 
+        tmpDouble, 
+        Q; 
+
+// Определение кол-ва точек по x и y, границ препятсвия в точках 
+int
+        nx = (int)(Lx / h) + 1, 
+	ny = (int)(Ly / h) + 1; 
+
+// Определение переменных для распараллеливания 
+
+int 
+        l1 = nx / size, 
+        l2 = nx % size; 
+
+int* kol = new int[size]; 
+
+for (int i = 0; i < size; i++) kol[i] = l1; 
+    if (l2) { 
+        if (rank < l2) l1++; 
+        for (int i = 0; i < l2; i++) kol[i]++; 
+    } 
+
+    int n = l1; 
+
+    if ((!rank) || (rank == size - 1)) { 
+        n += 1; 
+    } 
+
+    else { 
+        n += 2; 
+    } 
+
+    int* disp = new int[size]; 
+
+    disp[0] = 0; 
+    disp[1] = kol[0]; 
+
+    for (int i = 2; i < size; i++) { 
+        disp[i] = disp[i - 1] + kol[i - 1]; 
+    } 
+
+    int iStart = disp[rank]; 
+    if (rank) iStart -= 1; 
+    cout << rank << "  " << iStart << endl; 
+    MPI_Barrier(MPI_COMM_WORLD); 
+
+// Выделение памяти под массивы 
+
+    double** Ux = new double* [n]; 
+double** Uy = new double* [n]; 
+    double** Psi = new double* [n]; 
+    double** PsiNew = new double* [n]; 
+    double** W = new double* [n]; 
+    double** WNew = new double* [n]; 
+    int** obstruction = new int* [nx]; 
+    double** PsiGeneral = new double* [nx]; 
+
+    for (int i = 0; i < n; i++) { 
+
+        Ux[i] = new double[ny]; 
+
+        Uy[i] = new double[ny]; 
+
+        Psi[i] = new double[ny]; 
+
+        PsiNew[i] = new double[ny]; 
+
+        W[i] = new double[ny]; 
+
+        WNew[i] = new double[ny]; 
+
+    } 
+
+ 
+
+    for (int i = 0; i < n; i++) { 
+
+        for (int j = 0; j < ny; j++) { 
+
+            Ux[i][j] = 0.0; 
+
+            Uy[i][j] = 0.0; 
+
+            Psi[i][j] = 0.0; 
+
+            PsiNew[i][j] = 0.0; 
+
+            W[i][j] = 0.0; 
+
+            WNew[i][j] = 0.0; 
+
+        } 
+
+    } 
+
+ 
+
+    // Для препятствия 
+
+    for (int i = 0; i < nx; i++) { 
+
+        obstruction[i] = new int[ny]; 
+
+        PsiGeneral[i] = new double[ny]; 
+
+    } 
+
+ 
+
+    for (int i = 0; i < nx; i++) 
+
+        for (int j = 0; j < ny; j++) { 
+
+            obstruction[i][j] = 0; 
+
+            PsiGeneral[i][j] = 0.0; 
+
+} 
+
+    // Заполнение массива препятствия 
+
+ 
+
+    // Определение граничных значений для скорости 
+
+ 
+
+if (!rank) { 
+
+        for (int j = 1; j < ny - 1; j++) { 
+
+            Ux[0][j] = 4 * UxMax * j * (ny - 1 - j) / ((ny - 1) * (ny - 1)); 
+
+        } 
+
+    } 
+
+ 
+
+    if (rank == size - 1) { 
+
+        for (int j = 1; j < ny - 1; j++) { 
+
+            Ux[n - 1][j] = 4 * UxMax * j * (ny - 1 - j) / ((ny - 1) * (ny - 1)); 
+
+        } 
+
+    } 
+
+ 
+
+    // Слева 
+
+    if (!rank) { 
+
+        for (int j = 1; j < ny; j++) { 
+
+            Psi[0][j] = Psi[0][j - 1] + Ux[0][j] * h; 
+
+        } 
+
+ 
+
+        // Пересылказначениянаконце 
+
+        for (int i = 1; i < size; i++) { 
+
+            MPI_Send(&Psi[0][ny - 1], 1, MPI_DOUBLE, i, msgtag, MPI_COMM_WORLD); 
+
+        } 
+
+ 
+
+    } 
+
+ 
+
+    // Сверху 
+
+ 
+
+    if (rank != 0) { 
+
+        MPI_Recv(&Psi[0][ny - 1], 1, MPI_DOUBLE, 0, msgtag, MPI_COMM_WORLD, &status); 
+
+    } 
+
+ 
+
+    for (int i = 1; i < n; i++) { 
+
+        Psi[i][ny - 1] = Psi[i - 1][ny - 1]; 
+
+    } 
+
+ 
+
+    if (rank == size - 1) { 
+
+        for (int j = 1; j < ny; j++) { 
+
+            Psi[n - 1][j] = Psi[n - 1][j - 1] + Ux[n - 1][j] * h; 
+
+        } 
+
+    } 
+
+ 
+
+    if (!rank) Q = Psi[0][ny - 1] - Psi[0][0]; 
+
+ 
+
+    MPI_Bcast(&Q, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD); 
+
+ 
+
+// Несколько препятствий будем добавлять в вектор  
+
+vector<double> obstructionCoords; 
+
+vector<vector<double>> allObstructiont; 
+
+ 
+
+// (x1, x2, y1, y2) 
+
+obstructionCoords = { 2.0, 3.5, 2.0, 8.0 }; 
+
+allObstructiont.push_back(obstructionCoords); 
+
+ 
+
+obstructionCoords = { 5.0, 7.0, 0.0, 4.0 }; 
+
+allObstructiont.push_back(obstructionCoords); 
+
+ 
+
+obstructionCoords = { 5.0, 7.0, 6.0, 10.0 }; 
+
+allObstructiont.push_back(obstructionCoords); 
+
+ 
+
+obstructionCoords = { 9.0, 13.0, 4.0, 6.0 }; 
+
+allObstructiont.push_back(obstructionCoords); 
+
+ 
+
+    for (int i = 0; i < nx; i++) { 
+
+        obstruction[i][0] = 1; 
+
+        obstruction[i][ny - 1] = 1; 
+
+    } 
+
+ 
+
+    obstructionFormation(obstruction, allObstructiont, h, PsiGeneral, ny, Q); 
+
+ 
+
+    // Распределение PsiGeneral в Psi 
+
+ 
+
+    for (int i = 1; i < n - 1; i++) { 
+
+        for(int j = 1; j < ny - 1; j++){ 
+
+            Psi[i][j] = PsiGeneral[i + iStart][j]; 
+
+        } 
+
+    } 
+
+ 
+
+    // Расчетныйцикл 
+
+ 
+
+    if (!rank) sTime = MPI_Wtime(); 
+
+ 
+
+do { 
+
+ 
+
+        // Сверху расчетной области (на всех процессах) 
+
+ 
+
+for (int i = 0; i < n; i++) { 
+
+            W[i][ny - 1] = WNew[i][ny - 1] = -(Psi[i][ny - 1] - Psi[i][ny - 2]) / (h * h); 
+
+} 
+
+ 
+
+        // Снизу расчетной области (на всех процессах) 
+
+ 
+
+for (int i = 0; i < n; i++) { 
+
+            W[i][0] = WNew[i][0] = -(Psi[i][1] - Psi[i][0]) / (h * h); 
+
+ 
+
+} 
+
+ 
+
+        // На границах препятствия (через массив obsruction) 
+
+ 
+
+for (int i = 1; i < n - 1; i++) { 
+
+            for (int j = 1; j < ny - 1; j++) { 
+
+ 
+
+                // Снизупрепятствия 
+
+                if (obstruction[i + iStart][j] == 1 && obstruction[i + iStart][j - 1] == 0) { 
+
+                    W[i][j] = WNew[i][j] = -(Psi[i][j] - Psi[i][j - 1]) / (h * h); 
+
+                } 
+
+ 
+
+                // Сверхупрепятствия 
+
+                if (obstruction[i + iStart][j] == 1 && obstruction[i + iStart][j + 1] == 0) { 
+
+                    W[i][j] = WNew[i][j] = -(Psi[i][j + 1] - Psi[i][j]) / (h * h); 
+
+                } 
+
+ 
+
+                // Слевапрепятствия 
+
+                if (obstruction[i + iStart][j] && obstruction[i + iStart - 1][j] == 0) { 
+
+                    W[i][j] = WNew[i][j] = -(Psi[i][j] - Psi[i - 1][j]) / (h * h); 
+
+                } 
+
+ 
+
+                // Справапрепятствия 
+
+                if (obstruction[i + iStart][j] == 1 && obstruction[i + iStart + 1][j] == 0) { 
+
+                    W[i][j] = WNew[i][j] = -(Psi[i + 1][j] - Psi[i][j]) / (h * h); 
+
+} 
+
+            } 
+
+        } 
+
+ 
+
+        // Пересылка между процессами 
+
+        if (rank & 1) 
+
+{ 
+
+            MPI_Ssend(W[1], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD); 
+
+            MPI_Recv(W[0], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD, &status); 
+
+            if (rank != size - 1) 
+
+            { 
+
+                MPI_Ssend(W[n - 2], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD); 
+
+                MPI_Recv(W[n - 1], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD, &status); 
+
+            } 
+
+        } 
+
+ 
+
+        else 
+
+        { 
+
+            if (rank != size - 1) 
+
+            { 
+
+ 
+
+                MPI_Recv(W[n - 1], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD, &status); 
+
+                MPI_Ssend(W[n - 2], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD); 
+
+            } 
+
+            if (rank) 
+
+            { 
+
+                MPI_Recv(W[0], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD, &status); 
+
+                MPI_Ssend(W[1], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD); 
+
+            } 
+
+        } 
+
+ 
+
+        MPI_Barrier(MPI_COMM_WORLD); 
+
+ 
+
+        // УравненеиеГельмгольца 
+
+ 
+
+        for (int i = 1; i < n - 1; i++) { 
+
+            for (int j = 1; j < ny - 1; j++) { 
+
+                if (obstruction[i + iStart][j] == 0) { 
+
+                    WNew[i][j] = W[i][j] + tau * (-((Ux[i][j] + abs(Ux[i][j])) / 2.0) * (W[i][j] - W[i - 1][j]) / h 
+
+                        - ((Ux[i][j] - abs(Ux[i][j])) / 2.0) * (W[i + 1][j] - W[i][j]) / h 
+
+                        - ((Uy[i][j] + abs(Uy[i][j])) / 2.0) * (W[i][j] - W[i][j - 1]) / h 
+
+                        - ((Uy[i][j] - abs(Uy[i][j])) / 2.0) * (W[i][j + 1] - W[i][j]) / h 
+
+                        + nu * ((W[i + 1][j] + W[i - 1][j] + W[i][j + 1] + W[i][j - 1] - 4 * W[i][j]) / (h * h))); 
+
+} 
+
+            } 
+
+        } 
+
+ 
+
+        // Переприсваиваем внутренние значения 
+
+ 
+
+        for (int i = 1; i < n - 1; i++) { 
+
+for (int j = 1; j < ny - 1; j++) { 
+
+W[i][j] = WNew[i][j]; 
+
+            } 
+
+        } 
+
+ 
+
+        // Пересылка между процессами 
+
+ 
+
+if (rank & 1) 
+
+        { 
+
+            MPI_Ssend(W[1], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD); 
+
+            MPI_Recv(W[0], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD, &status); 
+
+            if (rank != size - 1) 
+
+            { 
+
+                MPI_Ssend(W[n - 2], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD); 
+
+                MPI_Recv(W[n - 1], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD, &status); 
+
+            } 
+
+        } 
+
+ 
+
+        else 
+
+        { 
+
+            if (rank != size - 1) 
+
+            { 
+
+ 
+
+                MPI_Recv(W[n - 1], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD, &status); 
+
+                MPI_Ssend(W[n - 2], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD); 
+
+            } 
+
+            if (rank) 
+
+            { 
+
+                MPI_Recv(W[0], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD, &status); 
+
+                MPI_Ssend(W[1], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD); 
+
+} 
+
+        } 
+
+ 
+
+        // Пересчет Функции тока 
+
+ 
+
+        do { 
+
+            eps = -1.0; 
+
+ 
+
+for (int i = 1; i < n - 1; i++) { 
+
+                for (int j = 1; j < ny - 1; j++){ 
+
+                    if (obstruction[i + iStart][j] == 0) { 
+
+                        PsiNew[i][j] = (h * h * W[i][j] + Psi[i + 1][j] + Psi[i - 1][j] + Psi[i][j + 1] + Psi[i][j - 1]) / 4.0; 
+
+                        eps = max(eps, abs(PsiNew[i][j] - Psi[i][j])); 
+
+} 
+
+                } 
+
+            } 
+
+ 
+
+            // Переприсваиваем внутренние значения 
+
+ 
+
+            for (int i = 1; i < n - 1; i++) { 
+
+for (int j = 1; j < ny - 1; j++) { 
+
+                    if (obstruction[i + iStart][j] == 0) 
+
+                        Psi[i][j] = PsiNew[i][j]; 
+
+} 
+
+            } 
+
+ 
+
+            // Пересылка между процессами 
+
+ 
+
+            if (rank & 1) 
+
+{ 
+
+                MPI_Ssend(Psi[1], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD); 
+
+                MPI_Recv(Psi[0], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD, &status); 
+
+                if (rank != size - 1) 
+
+                { 
+
+                    MPI_Ssend(Psi[n - 2], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD); 
+
+                    MPI_Recv(Psi[n - 1], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD, &status); 
+
+                } 
+
+            } 
+
+ 
+
+            else 
+
+            { 
+
+                if (rank != size - 1) 
+
+                { 
+
+ 
+
+                    MPI_Recv(Psi[n - 1], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD, &status); 
+
+                    MPI_Ssend(Psi[n - 2], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD); 
+
+                } 
+
+                if (rank) 
+
+                { 
+
+                    MPI_Recv(Psi[0], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD, &status); 
+
+                    MPI_Ssend(Psi[1], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD); 
+
+                } 
+
+            } 
+
+ 
+
+            // Находимглобальный eps 
+
+            MPI_Allreduce(&eps, &globaleps, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD); 
+
+ 
+
+} while (globaleps >= epsilon); 
+
+ 
+
+        // Пересчет составляющих скоростей 
+
+ 
+
+for (int i = 1; i < n - 1; i++) { 
+
+            for (int j = 1; j < ny - 1; j++) { 
+
+                if (obstruction[i + iStart][j] == 0) { 
+
+                    Ux[i][j] = (Psi[i + 1][j + 1] + Psi[i - 1][j + 1] - Psi[i + 1][j - 1] - Psi[i - 1][j - 1]) / (4 * h); 
+
+                    Uy[i][j] = -(Psi[i + 1][j + 1] - Psi[i - 1][j + 1] + Psi[i + 1][j - 1] - Psi[i - 1][j - 1]) / (4 * h); 
+
+} 
+
+            } 
+
+        } 
+
+ 
+
+        // Пересылка между процессами 
+
+ 
+
+        if (rank & 1) 
+
+{ 
+
+            MPI_Ssend(Ux[1], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD); 
+
+            MPI_Ssend(Uy[1], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD); 
+
+            MPI_Recv(Ux[0], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD, &status); 
+
+            MPI_Recv(Uy[0], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD, &status); 
+
+            if (rank != size - 1) 
+
+            { 
+
+                MPI_Ssend(Ux[n - 2], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD); 
+
+                MPI_Ssend(Uy[n - 2], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD); 
+
+                MPI_Recv(Ux[n - 1], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD, &status); 
+
+                MPI_Recv(Uy[n - 1], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD, &status); 
+
+            } 
+
+        } 
+
+ 
+
+        else 
+
+        { 
+
+            if (rank != size - 1) 
+
+            { 
+
+ 
+
+                MPI_Recv(Ux[n - 1], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD, &status); 
+
+                MPI_Recv(Uy[n - 1], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD, &status); 
+
+                MPI_Ssend(Ux[n - 2], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD); 
+
+                MPI_Ssend(Uy[n - 2], ny, MPI_DOUBLE, rank + 1, msgtag, MPI_COMM_WORLD); 
+
+            } 
+
+            if (rank) 
+
+            { 
+
+                MPI_Recv(Ux[0], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD, &status); 
+
+                MPI_Recv(Uy[0], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD, &status); 
+
+                MPI_Ssend(Ux[1], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD); 
+
+                MPI_Ssend(Uy[1], ny, MPI_DOUBLE, rank - 1, msgtag, MPI_COMM_WORLD); 
+
+            } 
+
+        } 
+
+ 
+
+        t += tau; 
+
+    } while (t <= tmax); 
+
+ 
+
+    if (!rank) { 
+
+        eTime = MPI_Wtime(); 
+
+cout << eTime - sTime << endl; 
+
+    } 
+
+ 
+
+    // Вывод полученных значений в файлы 
+
+int in, ik; 
+
+    if (!rank) in = 0; else in = 1; 
+
+    if (rank == size - 1) ik = n; else ik = n - 1; 
+
+ 
+
+    std::ofstream outUx, outUy, outPsi, outW; 
+
+ 
+
+    // Ux 
+
+    for (int r = 0; r < size; r++) { 
+
+        if (rank == r) { 
+
+            outUx.open("Ux_res.txt", std::ios::app); 
+
+            for (int i = in; i < ik; i++) { 
+
+                for (int j = 0; j < ny; j++) { 
+
+                    outUx << std::fixed << setprecision(6) << Ux[i][j] << "\t\t"; 
+
+                } 
+
+                outUx << endl; 
+
+            } 
+
+            outUx.close(); 
+
+        } 
+
+        MPI_Barrier(MPI_COMM_WORLD); 
+
+    } 
+
+ 
+
+    // Uy 
+
+    for (int r = 0; r < size; r++) { 
+
+        if (rank == r) { 
+
+            outUy.open("Uy_res.txt", std::ios::app); 
+
+            for (int i = in; i < ik; i++) { 
+
+                for (int j = 0; j < ny; j++) { 
+
+                    outUy << std::fixed << setprecision(6) << Uy[i][j] << "\t\t"; 
+
+                } 
+
+                outUy << endl; 
+
+            } 
+
+            outUy.close(); 
+
+        } 
+
+        MPI_Barrier(MPI_COMM_WORLD); 
+
+    } 
+
+ 
+
+    // Psi 
+
+    for (int r = 0; r < size; r++) { 
+
+        if (rank == r) { 
+
+            outPsi.open("Psi_res.txt", std::ios::app); 
+
+            for (int i = in; i < ik; i++) { 
+
+                for (int j = 0; j < ny; j++) { 
+
+                    outPsi << std::fixed << setprecision(6) << Psi[i][j] << "\t\t"; 
+
+                } 
+
+                outPsi << endl; 
+
+            } 
+
+            outPsi.close(); 
+
+        } 
+
+        MPI_Barrier(MPI_COMM_WORLD); 
+
+    } 
+
+ 
+
+    // W 
+
+    for (int r = 0; r < size; r++) { 
+
+        if (rank == r) { 
+
+            outW.open("W_res.txt", std::ios::app); 
+
+            for (int i = in; i < ik; i++) { 
+
+                for (int j = 0; j < ny; j++) { 
+
+                    outW << std::fixed << setprecision(6) << W[i][j] << "\t\t"; 
+
+                } 
+
+                outW << endl; 
+
+            } 
+
+            outW.close(); 
+
+        } 
+
+        MPI_Barrier(MPI_COMM_WORLD); 
+
+} 
+
+ 
+
+    // 0-й считывает из файлов, и записывает в нормальном виде скорости 
+
+ 
+
+if (!rank) { 
+
+        std::ifstream inX("Ux_res.txt"); 
+
+        std::ifstream inY("UY_res.txt"); 
+
+ 
+
+        double** UxRes = new double* [nx]; 
+
+        double** UyRes = new double* [nx]; 
+
+        for (int i = 0; i < nx; i++) { 
+
+            UxRes[i] = new double[ny]; 
+
+            UyRes[i] = new double[ny]; 
+
+        } 
+
+ 
+
+        for (int i = 0; i < nx; i++) { 
+
+            for (int j = 0; j < ny; j++) { 
+
+                inX >> UxRes[i][j]; 
+
+                inY >> UyRes[i][j]; 
+
+            } 
+
+        } 
+
+ 
+
+        inX.close(); 
+
+        inY.close(); 
+
+ 
+
+        std::ofstream UxRank0, UyRank0; 
+
+ 
+
+        UxRank0.open("UX_rank0.txt"); 
+
+        UyRank0.open("UY_rank0.txt"); 
+
+ 
+
+        for (int j = ny - 1; j >= 0; j--) { 
+
+            for (int i = 0; i < nx; i++) { 
+
+                UxRank0 << std::fixed << setprecision(6) << UxRes[i][j] << "\t\t"; 
+
+            } 
+
+            UxRank0 << endl; 
+
+        } 
+
+        UxRank0.close(); 
+
+ 
+
+        for (int j = ny - 1; j >= 0; j--) { 
+
+            for (int i = 0; i < nx; i++) { 
+
+                UyRank0 << std::fixed << setprecision(6) << UyRes[i][j] << "\t\t"; 
+
+            } 
+
+            UyRank0 << endl; 
+
+        } 
+
+        UyRank0.close(); 
+
+    } 
+
+ 
+
+    // Освобождениепамяти 
+
+ 
+
+    for (int i = 0; i < n; i++) { 
+
+        delete[] W[i]; 
+
+        delete[] WNew[i]; 
+
+        delete[] Psi[i]; 
+
+        delete[] PsiNew[i]; 
+
+        delete[] Ux[i]; 
+
+        delete[] Uy[i]; 
+
+    } 
+
+ 
+
+    for (int i = 0; i < nx; i++) 
+
+        delete[] obstruction[i]; 
+
+ 
+
+    delete[] W; 
+
+    delete[] WNew; 
+
+    delete[] Psi; 
+
+    delete[] PsiNew; 
+
+    delete[] Ux; 
+
+    delete[] Uy; 
+
+    delete[] obstruction; 
+
+ 
+
+MPI_Finalize(); 
+
+    return 0; 
+
+} 
