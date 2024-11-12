@@ -1,10 +1,11 @@
-#include "VelocityPressureSolver.hpp"
+#include "VelocityPressureSolverOMP.hpp"
 #include <cmath>
+#include <omp.h>
 
-VelocityPressureSolver::VelocityPressureSolver(std::shared_ptr<ILogger> logger)
+VelocityPressureSolverOMP::VelocityPressureSolverOMP(std::shared_ptr<ILogger> logger)
     : BasicSolver(std::move(logger)) {}
 
-void VelocityPressureSolver::init() {
+void VelocityPressureSolverOMP::init() {
     logger->log("start init", LogLevel::INFO);
     u.resize(nx, std::vector<double>(ny, 0.0));
     v.resize(nx, std::vector<double>(ny, 0.0));
@@ -15,7 +16,7 @@ void VelocityPressureSolver::init() {
     logger->log("init success", LogLevel::INFO);
 }
 
-void VelocityPressureSolver::solve(double time, double tau, double u_max) {
+void VelocityPressureSolverOMP::solve(double time, double tau, double u_max) {
     double t{};
     initializeBoundaryConditions(u_max);
     logger->log("Start solving", LogLevel::INFO);
@@ -24,14 +25,14 @@ void VelocityPressureSolver::solve(double time, double tau, double u_max) {
         updateBoundaryConditions();
         updateVelocityU(tau);
         updateVelocityV(tau);
-        t+=tau;
+        t += tau;
     } while (t <= time);
     logger->log("End solving", LogLevel::INFO);
 }
 
-void VelocityPressureSolver::initializeBoundaryConditions(double u_max) {
+void VelocityPressureSolverOMP::initializeBoundaryConditions(double u_max) {
     init();
-    // Граничные значения для скорости (параболический профиль на входе и выходе)
+    #pragma omp parallel for
     for (int j = 1; j < ny - 1; j++) {
         u[0][j] = 4 * u_max * j * (ny - 1 - j) / ((ny - 1) * (ny - 1));
         u[nx - 1][j] = 4 * u_max * j * (ny - 1 - j) / ((ny - 1) * (ny - 1));
@@ -41,7 +42,8 @@ void VelocityPressureSolver::initializeBoundaryConditions(double u_max) {
     logger->log("init boundary conditions success", LogLevel::INFO);
 }
 
-void VelocityPressureSolver::updatePressure(double tau) {
+void VelocityPressureSolverOMP::updatePressure(double tau) {
+    #pragma omp parallel for collapse(2)
     for (int i = 1; i < nx - 1; ++i) {
         for (int j = 1; j < ny - 1; ++j) {
             div_velocity[i][j] = ((u[i + 1][j + 1] + u[i + 1][j - 1]) - (u[i - 1][j - 1] + u[i - 1][j + 1])
@@ -49,6 +51,7 @@ void VelocityPressureSolver::updatePressure(double tau) {
         }
     }
 
+    #pragma omp parallel for collapse(2)
     for (int i = 1; i < nx - 1; ++i) {
         for (int j = 1; j < ny - 1; ++j) {
             pressure[i][j] -= c * tau * div_velocity[i][j];
@@ -56,19 +59,22 @@ void VelocityPressureSolver::updatePressure(double tau) {
     }
 }
 
-void VelocityPressureSolver::updateBoundaryConditions() {
-    // Грани
+void VelocityPressureSolverOMP::updateBoundaryConditions() {
+    #pragma omp parallel for
     for (int i = 1; i < nx - 1; ++i) {
         pressure[i][0] = pressure[i][1];
         pressure[i][ny - 1] = pressure[i][ny - 2];
     }
+
+    #pragma omp parallel for
     for (int j = 1; j < ny - 1; ++j) {
         pressure[0][j] = 2 * pressure[1][j] - pressure[2][j];
         pressure[nx - 1][j] = 2 * pressure[nx - 2][j] - pressure[nx - 3][j];
     }
 }
 
-void VelocityPressureSolver::updateVelocityU(double tau) {
+void VelocityPressureSolverOMP::updateVelocityU(double tau) {
+    #pragma omp parallel for collapse(2)
     for (int i = 1; i < nx - 1; ++i) {
         for (int j = 1; j < ny - 1; ++j) {
             u_new[i][j] = u[i][j] + tau * (
@@ -81,13 +87,15 @@ void VelocityPressureSolver::updateVelocityU(double tau) {
             );
         }
     }
-    // Обновляем старое значение скорости u
+
+    #pragma omp parallel for collapse(2)
     for (int i = 1; i < nx - 1; ++i)
         for (int j = 1; j < ny - 1; ++j)
             u[i][j] = u_new[i][j];
 }
 
-void VelocityPressureSolver::updateVelocityV(double tau) {
+void VelocityPressureSolverOMP::updateVelocityV(double tau) {
+    #pragma omp parallel for collapse(2)
     for (int i = 1; i < nx - 1; ++i) {
         for (int j = 1; j < ny - 1; ++j) {
             v_new[i][j] = v[i][j] + tau * (
@@ -100,7 +108,8 @@ void VelocityPressureSolver::updateVelocityV(double tau) {
             );
         }
     }
-    // Обновляем старое значение скорости v
+
+    #pragma omp parallel for collapse(2)
     for (int i = 1; i < nx - 1; ++i)
         for (int j = 1; j < ny - 1; ++j)
             v[i][j] = v_new[i][j];

@@ -1,7 +1,9 @@
 #pragma once
 #include "BasicSolver.hpp"
-#include "VorticityStreamFunctionSolver.hpp"
 #include "VelocityPressureSolver.hpp"
+#include "VelocityPressureSolverOMP.hpp"
+#include "VorticityStreamFunctionSolver.hpp"
+#include "VorticityStreamFunctionSolverOMP.hpp"
 #include <memory>
 #include <string>
 

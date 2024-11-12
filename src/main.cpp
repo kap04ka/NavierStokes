@@ -4,6 +4,7 @@
 
 int main() {
     setlocale(LC_ALL, "ru");
+
     std::shared_ptr<ILogger> logger = std::make_shared<ConsoleLogger>();
 
     double 
@@ -21,7 +22,8 @@ int main() {
         u_max = 2.0;
 
     while(true) {
-        std::cout << "Methods:\n" << "vorticity-stream\n" << "velocity-pressure\n" << "q\\quit - exit\n";
+        std::cout << "Methods:\n" << "vorticity-stream\n" << "velocity-pressure\n" 
+                  << "vorticity-stream-omp\n" << "velocity-pressure-omp\n" << "q\\quit - exit\n";
         std::string option;
         std::cin >> option;
 

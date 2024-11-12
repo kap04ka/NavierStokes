@@ -57,6 +57,20 @@
         "xutility": "cpp",
         "algorithm": "cpp",
         "optional": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "chrono": "cpp",
+        "forward_list": "cpp",
+        "functional": "cpp",
+        "list": "cpp",
+        "regex": "cpp",
+        "set": "cpp",
+        "sstream": "cpp",
+        "typeindex": "cpp",
+        "unordered_map": "cpp",
+        "variant": "cpp",
+        "xhash": "cpp",
+        "xtree": "cpp",
+        "condition_variable": "cpp",
+        "future": "cpp"
     }
 }

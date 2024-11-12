@@ -3,9 +3,9 @@
 #include <vector>
 #include <memory>
 
-class VorticityStreamFunctionSolver : public BasicSolver {
-    public:
-        VorticityStreamFunctionSolver(std::shared_ptr<ILogger> log);
+class VorticityStreamFunctionSolverOMP : public BasicSolver {
+        public:
+        VorticityStreamFunctionSolverOMP(std::shared_ptr<ILogger> log);
         void solve(double time, double tau, double u_max) override;
         
     protected:
